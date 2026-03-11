@@ -1,3 +1,10 @@
 __pycache__/
+*.pyc
 .venv/
 CLAUDE.md
+*.egg-info/
+dist/
+.pytest_cache/
+.pyright/
+.ruff_cache/
+.DS_Store
