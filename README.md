@@ -16,3 +16,27 @@ It is tightly scoped to this bit only - and comes in at just under 250 lines of 
 pip install odax
 ```
 Requires Python 3.11+. 
+
+## Quick example
+
+```python
+import jax.numpy as jnp
+
+from odax import Model, Parameter, Reaction, Species
+
+x = Species(name="x")
+alpha = Parameter(name="alpha", value=1.0, trainable=True, space="log")
+k = Parameter(name="k", value=0.5, trainable=True, space="log")
+
+model = Model(
+    species=[x],
+    parameters=[alpha, k],
+    reactions=[
+        Reaction(name="production", rate=alpha.sym, stoichiometry={"x": 1}),
+        Reaction(name="decay", rate=k.sym * x.sym, stoichiometry={"x": -1}),
+    ],
+)
+
+dydt = model(t=jnp.array(0.0), y={"x": jnp.array(1.0)}, args=None)
+# {"x": Array(0.5)} — i.e. alpha - k*x = 1.0 - 0.5*1.0
+```
