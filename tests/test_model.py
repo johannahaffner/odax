@@ -78,7 +78,7 @@ def test_model_raises_on_unknown_symbol_in_rate():
     k = Parameter(name="k", value=0.5, trainable=False, space="natural")
     mystery = sympy.Symbol("z")
     rxn = Reaction(name="decay", rate=mystery * x.sym, stoichiometry={"x": -1})
-    with pytest.raises(ValueError, match="unknown symbol"):
+    with pytest.raises(ValueError, match="Unknown symbol"):
         Model(species=[x], parameters=[k], reactions=[rxn], inputs=[])
 
 
