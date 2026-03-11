@@ -1,4 +1,4 @@
-# odax
+# Odax
 
 Parsimoniously express your differential equation models with parameter constraints + forcing terms in JAX.
 This is a wrapper around [sympy2jax](https://github.com/patrick-kidger/sympy2jax) that adds support for
@@ -40,3 +40,19 @@ model = Model(
 dydt = model(t=jnp.array(0.0), y={"x": jnp.array(1.0)}, args=None)
 # {"x": Array(0.5)} — i.e. alpha - k*x = 1.0 - 0.5*1.0
 ```
+
+## See also: other libraries in the JAX ecosystem
+
+**Always useful**  
+[Equinox](https://github.com/patrick-kidger/equinox): neural networks and everything not already in core JAX!  
+[jaxtyping](https://github.com/patrick-kidger/jaxtyping): type annotations for shape/dtype of arrays.  
+
+**Deep learning**  
+[Optax](https://github.com/deepmind/optax): first-order gradient (SGD, Adam, ...) optimisers.   
+
+**Scientific computing**  
+[Diffrax](https://github.com/patrick-kidger/diffrax): numerical differential equation solvers.  
+[Lineax](https://github.com/patrick-kidger/lineax): linear solvers.  
+[Optimistix](https://github.com/patrick-kidger/optimistix): nonlinear solvers.
+[BlackJAX](https://github.com/blackjax-devs/blackjax): probabilistic+Bayesian sampling.   
+[PySR](https://github.com/milesCranmer/PySR): symbolic regression. (Non-JAX honourable mention!)  
