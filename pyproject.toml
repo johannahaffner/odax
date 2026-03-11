@@ -7,6 +7,7 @@ dependencies = [
   "jax>=0.4.38",
   "typing_extensions>=4.5.0",
   "equinox>=0.11.10",
+  "sympy>=1.7.1",
   "sympy2jax>=0.0.8",
   "paramax>=0.0.5"
 ]
