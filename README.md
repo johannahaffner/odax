@@ -5,7 +5,7 @@ Simple SBML-style model specification, the JAX-native way.
 Odax is a wrapper around [sympy2jax](https://github.com/patrick-kidger/sympy2jax) that adds support for
 
 - parameter constraints via [Paramax](https://github.com/danielward27/paramax)
-- forcing terms or experimental conditions $u(t)$, e.g. expressed via [Diffrax](https://github.com/patrick-kidger/diffrax)
+- forcing terms or experimental conditions $u(t)$, e.g. expressed via [Diffrax](https://github.com/patrick-kidger/diffrax) interpolations
 - creating model variations - e.g. different rate laws - with minimal code duplication
 - SBML types such as Species, Reactions, Parameters and AssigmentRules
 
