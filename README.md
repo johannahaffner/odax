@@ -5,7 +5,8 @@ This is a wrapper around [sympy2jax](https://github.com/patrick-kidger/sympy2jax
 
 - parameter constraints via [Paramax](https://github.com/danielward27/paramax)
 - forcing terms or experimental conditions $u(t)$, e.g. expressed via [Diffrax](https://github.com/patrick-kidger/diffrax)
-- lots of different variations of reaction equations - built from the same species + parameters, endlessly tweakable with minimal duplicated code.
+- creating model variations - e.g. different rate laws - with minimal code duplication
+- SBML types such as Species, Reactions, Parameters and AssigmentRules
 
 Odax implements a subset of SBML specifications - expressing models via species, parameters, differential and algebraic equations, and arbitrary forcing terms.
 It is tightly scoped to this bit only - and comes in at just under 250 lines of code + tests.
