@@ -1,7 +1,8 @@
 # Odax
 
-Parsimoniously express your differential equation models with parameter constraints + forcing terms in JAX.
-This is a wrapper around [sympy2jax](https://github.com/patrick-kidger/sympy2jax) that adds support for
+Simple SBML-style model specification, the JAX-native way.
+
+Odax is a wrapper around [sympy2jax](https://github.com/patrick-kidger/sympy2jax) that adds support for
 
 - parameter constraints via [Paramax](https://github.com/danielward27/paramax)
 - forcing terms or experimental conditions $u(t)$, e.g. expressed via [Diffrax](https://github.com/patrick-kidger/diffrax)
