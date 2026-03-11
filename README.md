@@ -54,6 +54,6 @@ dydt = model(t=jnp.array(0.0), y={"x": jnp.array(1.0)}, args=None)
 **Scientific computing**  
 [Diffrax](https://github.com/patrick-kidger/diffrax): numerical differential equation solvers.  
 [Lineax](https://github.com/patrick-kidger/lineax): linear solvers.  
-[Optimistix](https://github.com/patrick-kidger/optimistix): nonlinear solvers. 
+[Optimistix](https://github.com/patrick-kidger/optimistix): nonlinear solvers.   
 [BlackJAX](https://github.com/blackjax-devs/blackjax): probabilistic+Bayesian sampling.   
 [PySR](https://github.com/milesCranmer/PySR): symbolic regression. (Non-JAX honourable mention!)  
