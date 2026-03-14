@@ -96,18 +96,6 @@ class Model(eqx.Module):
             derivative_modules[s.name] = sympy2jax.SymbolicModule(expr)
         self.derivative_modules = derivative_modules
 
-    @property
-    def trainable_filter(self):
-        spec = jax.tree_util.tree_map(lambda _: False, self)
-        return eqx.tree_at(
-            lambda m: tuple(m.parameters.values()),
-            spec,
-            replace=tuple(
-                eqx.is_array if isinstance(p.param, px.Parameterize) else False
-                for p in self.parameters.values()
-            ),
-        )
-
     def __call__(
         self,
         t: Float[Array, ""],
@@ -124,3 +112,15 @@ class Model(eqx.Module):
         return {
             name: module(**combined) for name, module in self.derivative_modules.items()
         }
+
+
+def trainable_filter(model: Model):
+    spec = jax.tree_util.tree_map(lambda _: False, model)
+    return eqx.tree_at(
+        lambda m: tuple(m.parameters.values()),
+        spec,
+        replace=tuple(
+            eqx.is_array if isinstance(p.param, px.Parameterize) else False
+            for p in model.parameters.values()
+        ),
+    )

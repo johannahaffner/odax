@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import pytest
 import sympy
 
-from odax import Model, Parameter, Reaction, Species
+from odax import Model, Parameter, Reaction, Species, trainable_filter
 
 from .helpers import hill_production, ode_systems
 
@@ -112,8 +112,13 @@ def test_trainable_partition(make_system, space, trainable, getkey):
     case = make_system(space=space, trainable=trainable)
     model = _create_model(make_system, case)
 
-    dynamic, static = eqx.partition(model, model.trainable_filter, replace=None)
+    dynamic, static = eqx.partition(model, trainable_filter(model), replace=None)
+    for leaf in jax.tree_util.tree_leaves(dynamic):
+        assert leaf is None or eqx.is_array(leaf)
     for param in case.parameters:
         if not param.trainable:
             leaves = jax.tree_util.tree_leaves(dynamic.parameters[param.name].param)
             assert all(leaf is None for leaf in leaves)
+        else:
+            leaves = jax.tree_util.tree_leaves(dynamic.parameters[param.name].param)
+            assert any(eqx.is_array(leaf) for leaf in leaves)
