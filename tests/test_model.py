@@ -43,13 +43,23 @@ def test_model_vector_field_matches_expected(make_system, space, getkey):
         for s in case.species
         if s.expr is None
     }
-    result = model(t=jnp.array(0.0), y=y, args=args)
+
+    if args is not None:
+        paths = list(args.values())
+        t_min = max(p.t0 for p in paths)
+        t_max = min(p.t1 for p in paths)
+    else:
+        t_min, t_max = -1.0, 1.0
 
     params = {p.name: p.value for p in case.parameters}
-    expected = case.expected_vector_field(**y, **params, **input_vals)
-
-    for name in result:
-        assert jnp.allclose(result[name], jnp.array(expected[name]))
+    for _ in range(5):
+        t = jax.random.uniform(getkey(), minval=t_min, maxval=t_max)
+        if args is not None:
+            input_vals = {name: path.evaluate(t) for name, path in args.items()}
+        result = model(t=t, y=y, args=args)
+        expected = case.expected_vector_field(**y, **params, **input_vals)
+        for name in result:
+            assert jnp.allclose(result[name], jnp.array(expected[name]))
 
 
 def test_model_raises_on_duplicate_names():
