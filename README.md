@@ -43,6 +43,11 @@ dydt = model(t=jnp.array(0.0), y={"x": jnp.array(1.0)}, args=None)
 # {"x": Array(0.5)} — i.e. alpha - k*x = 1.0 - 0.5*1.0
 ```
 
+## Limitations
+
+Odax registers custom sympy-to-JAX conversions (e.g. `Piecewise` → `jnp.where`) via sympy2jax's `extra_funcs` mechanism, and passes these unconditionally to sympy2jax. 
+This means that our models cannot be converted back to sympy (which would require adding features upstream).
+
 ## See also: other libraries in the JAX ecosystem
 
 **Always useful**  
