@@ -13,6 +13,7 @@ from ._input import AbstractPath, Input
 from ._parameter import Parameter
 from ._reaction import Reaction
 from ._species import Species
+from ._sympy_utils import piecewise_extra_funcs
 
 
 class Model(eqx.Module):
@@ -93,7 +94,9 @@ class Model(eqx.Module):
                     "nicely with stiff ODE solvers.",
                     stacklevel=2,
                 )
-            derivative_modules[s.name] = sympy2jax.SymbolicModule(expr)
+            derivative_modules[s.name] = sympy2jax.SymbolicModule(
+                expr, extra_funcs=piecewise_extra_funcs
+            )
         self.derivative_modules = derivative_modules
 
     def __call__(

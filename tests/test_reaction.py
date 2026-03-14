@@ -4,6 +4,8 @@ import pytest
 import sympy
 import sympy2jax as s2j
 
+from odax._sympy_utils import piecewise_extra_funcs
+
 from .helpers import ode_systems
 
 
@@ -53,7 +55,9 @@ def test_sympy2jax_matches_sympy_and_expected_vector_field(make_system, getkey):
         derivative = derivative.subs(interm_subs)
 
         sympy_result = jnp.array(float(derivative.subs(numeric_subs)))  # pyright: ignore[reportCallIssue, reportArgumentType]
-        s2j_result = s2j.SymbolicModule(derivative)(**numeric)
+        s2j_result = s2j.SymbolicModule(derivative, extra_funcs=piecewise_extra_funcs)(
+            **numeric
+        )
         vf_result = jnp.array(expected_vf[species.name])
 
         assert jnp.allclose(sympy_result, vf_result)

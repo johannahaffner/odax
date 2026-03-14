@@ -361,6 +361,139 @@ def clipped_decay(*, space: Literal["log", "natural"], trainable: bool) -> ODETe
 
 
 @_register
+def conditional_production(
+    *, space: Literal["log", "natural"], trainable: bool
+) -> ODETestCase:
+    """dx/dt = where(x < threshold, k, 0) — produce only below threshold."""
+    x = odax.Species(name="x")
+    k = odax.Parameter(name="k", value=1.0, trainable=trainable, space=space)
+    threshold = odax.Parameter(
+        name="threshold", value=3.0, trainable=False, space="natural"
+    )
+
+    rate = odax.where(x.sym < threshold.sym, k.sym, sympy.Integer(0))
+    rxn = odax.Reaction(
+        name="conditional_production",
+        rate=rate,
+        stoichiometry={"x": 1},
+    )
+
+    x_sym, k_sym, threshold_sym = sympy.symbols("x k threshold")
+    return ODETestCase(
+        species=[x],
+        parameters=[k, threshold],
+        reactions=[rxn],
+        expected_derivatives={
+            "x": sympy.Piecewise(
+                (k_sym, x_sym < threshold_sym), (sympy.Integer(0), True)
+            )
+        },
+        expected_vector_field=lambda *, x, k, threshold: {
+            "x": jnp.where(x < threshold, k, 0.0),
+        },
+        inputs=[],
+        make_args=None,
+    )
+
+
+@_register
+def bang_bang(*, space: Literal["log", "natural"], trainable: bool) -> ODETestCase:
+    """dx/dt = where(x > eq, -k, k) — constant push toward equilibrium."""
+    x = odax.Species(name="x")
+    k = odax.Parameter(name="k", value=0.5, trainable=trainable, space=space)
+    eq = odax.Parameter(name="eq", value=2.0, trainable=False, space="natural")
+
+    rate_up = odax.where(x.sym > eq.sym, sympy.Integer(0), k.sym)
+    rate_down = odax.where(x.sym > eq.sym, k.sym, sympy.Integer(0))
+    rxn_up = odax.Reaction(name="push_up", rate=rate_up, stoichiometry={"x": 1})
+    rxn_down = odax.Reaction(name="push_down", rate=rate_down, stoichiometry={"x": -1})
+
+    x_sym, k_sym, eq_sym = sympy.symbols("x k eq")
+    return ODETestCase(
+        species=[x],
+        parameters=[k, eq],
+        reactions=[rxn_up, rxn_down],
+        expected_derivatives={
+            "x": (
+                sympy.Piecewise((sympy.Integer(0), x_sym > eq_sym), (k_sym, True))
+                - sympy.Piecewise((k_sym, x_sym > eq_sym), (sympy.Integer(0), True))
+            )
+        },
+        expected_vector_field=lambda *, x, k, eq: {
+            "x": jnp.where(x > eq, -k, k),
+        },
+        inputs=[],
+        make_args=None,
+    )
+
+
+@_register
+def nested_where(*, space: Literal["log", "natural"], trainable: bool) -> ODETestCase:
+    """dx/dt = -where(x > hi, k_fast, where(x < lo, k_slow, k_mid)) * x."""
+    x = odax.Species(name="x")
+    k_fast = odax.Parameter(name="k_fast", value=2.0, trainable=trainable, space=space)
+    k_slow = odax.Parameter(name="k_slow", value=0.1, trainable=trainable, space=space)
+    k_mid = odax.Parameter(name="k_mid", value=0.5, trainable=trainable, space=space)
+    lo = odax.Parameter(name="lo", value=1.0, trainable=False, space="natural")
+    hi = odax.Parameter(name="hi", value=4.0, trainable=False, space="natural")
+
+    inner = odax.where(x.sym < lo.sym, k_slow.sym, k_mid.sym)
+    rate = odax.where(x.sym > hi.sym, k_fast.sym, inner) * x.sym
+    rxn = odax.Reaction(name="region_decay", rate=rate, stoichiometry={"x": -1})
+
+    x_s = sympy.Symbol("x")
+    kf, ks, km = sympy.symbols("k_fast k_slow k_mid")
+    lo_s, hi_s = sympy.symbols("lo hi")
+    inner_sym = sympy.Piecewise((ks, x_s < lo_s), (km, True))
+    full_sym = sympy.Piecewise((kf, x_s > hi_s), (inner_sym, True))
+    return ODETestCase(
+        species=[x],
+        parameters=[k_fast, k_slow, k_mid, lo, hi],
+        reactions=[rxn],
+        expected_derivatives={"x": -full_sym * x_s},
+        expected_vector_field=lambda *, x, k_fast, k_slow, k_mid, lo, hi: {
+            "x": -jnp.where(x > hi, k_fast, jnp.where(x < lo, k_slow, k_mid)) * x,
+        },
+        inputs=[],
+        make_args=None,
+    )
+
+
+@_register
+def clipped_sine(*, space: Literal["log", "natural"], trainable: bool) -> ODETestCase:
+    """dx/dt = -k * clip(sin(omega * x), -0.75, 0.75)."""
+    x = odax.Species(name="x")
+    k = odax.Parameter(name="k", value=1.0, trainable=trainable, space=space)
+    omega = odax.Parameter(name="omega", value=3.0, trainable=trainable, space=space)
+    lo = odax.Parameter(name="lo", value=-0.75, trainable=False, space="natural")
+    hi = odax.Parameter(name="hi", value=0.75, trainable=False, space="natural")
+
+    rate = k.sym * odax.clip(sympy.sin(omega.sym * x.sym), lo.sym, hi.sym)
+    rxn = odax.Reaction(
+        name="clipped_sine",
+        rate=rate,
+        stoichiometry={"x": -1},
+    )
+
+    x_sym, k_sym, omega_sym = sympy.symbols("x k omega")
+    lo_sym, hi_sym = sympy.symbols("lo hi")
+    return ODETestCase(
+        species=[x],
+        parameters=[k, omega, lo, hi],
+        reactions=[rxn],
+        expected_derivatives={
+            "x": -k_sym
+            * sympy.Max(sympy.Min(sympy.sin(omega_sym * x_sym), hi_sym), lo_sym)
+        },
+        expected_vector_field=lambda *, x, k, omega, lo, hi: {
+            "x": -k * jnp.clip(jnp.sin(omega * x), lo, hi),
+        },
+        inputs=[],
+        make_args=None,
+    )
+
+
+@_register
 def fractional_activation(
     *, space: Literal["log", "natural"], trainable: bool
 ) -> ODETestCase:

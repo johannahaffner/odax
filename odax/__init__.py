@@ -5,3 +5,4 @@ from ._parameter import Parameter as Parameter
 from ._reaction import Reaction as Reaction
 from ._species import Species as Species
 from ._sympy_utils import clip as clip
+from ._sympy_utils import where as where
