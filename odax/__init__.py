@@ -6,3 +6,4 @@ from ._reaction import Reaction as Reaction
 from ._species import Species as Species
 from ._sympy_utils import clip as clip
 from ._sympy_utils import where as where
+# TODO Claude: from ._file import (Thing as Thing, SomethingElse as SomethingElse)
