@@ -116,11 +116,15 @@ class Model(eqx.Module):
 
 def trainable_filter(model: Model):
     spec = jax.tree_util.tree_map(lambda _: False, model)
+    # JAX sorts dict keys when flattening pytrees, so iterate in sorted order to match
+    # the tree structure of spec.
     return eqx.tree_at(
         lambda m: tuple(m.parameters.values()),
         spec,
         replace=tuple(
-            eqx.is_array if isinstance(p.param, px.Parameterize) else False
-            for p in model.parameters.values()
+            eqx.is_array
+            if isinstance(model.parameters[k].param, px.Parameterize)
+            else False
+            for k in sorted(model.parameters)
         ),
     )

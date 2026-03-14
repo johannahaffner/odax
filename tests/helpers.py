@@ -330,6 +330,37 @@ def forced_production(
 
 
 @_register
+def clipped_decay(*, space: Literal["log", "natural"], trainable: bool) -> ODETestCase:
+    """dx/dt = -k * clip(x, lo, hi), using sympy.Max(sympy.Min(...)) for clip."""
+    x = odax.Species(name="x")
+    k = odax.Parameter(name="k", value=0.5, trainable=trainable, space=space)
+    lo = odax.Parameter(name="lo", value=0.1, trainable=False, space="natural")
+    hi = odax.Parameter(name="hi", value=5.0, trainable=False, space="natural")
+
+    clipped = odax.clip(x.sym, lo.sym, hi.sym)
+    rxn = odax.Reaction(
+        name="clipped_decay",
+        rate=k.sym * clipped,
+        stoichiometry={"x": -1},
+    )
+
+    x_sym, k_sym, lo_sym, hi_sym = sympy.symbols("x k lo hi")
+    return ODETestCase(
+        species=[x],
+        parameters=[k, lo, hi],
+        reactions=[rxn],
+        expected_derivatives={
+            "x": -k_sym * sympy.Max(sympy.Min(x_sym, hi_sym), lo_sym)
+        },
+        expected_vector_field=lambda *, x, k, lo, hi: {
+            "x": -k * jnp.clip(x, lo, hi),
+        },
+        inputs=[],
+        make_args=None,
+    )
+
+
+@_register
 def fractional_activation(
     *, space: Literal["log", "natural"], trainable: bool
 ) -> ODETestCase:
